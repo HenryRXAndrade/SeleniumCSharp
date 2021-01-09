@@ -73,7 +73,7 @@ namespace Alura.LeilaoOnline.Selenium.Testes
             btn.Click();
             //Assert
             IWebElement element = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=Nome]"));
-            Assert.True(element.Displayed);
+            Assert.Equal("The Nome field is required.", element.Text);
         }
 
 
@@ -90,9 +90,68 @@ namespace Alura.LeilaoOnline.Selenium.Testes
             btn.Click();
             //Assert
             IWebElement element = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=Email]"));
-            Assert.True(element.Displayed);
+            Assert.Equal("Please enter a valid email address.", element.Text);
         }
 
-        // falta corrigir o teste com equals... na aula resultado com vários elementos
+
+        [Fact]
+        public void DadoEmailEmBrancoDeveMostrarMensagemDeErro()
+        {
+            //arrange
+            driver.Navigate().GoToUrl("http://localhost:5000");
+            var btn = driver.FindElement(By.Id("btnRegistro"));
+            //act
+            btn.Click();
+            //assert
+            var span = driver.FindElement(By.XPath("/html/body/section[3]/div/div/div[2]/form/div[2]/span/span"));
+            Assert.Equal("The Endereço de Email field is required.", span.Text);
+        }
+
+        [Fact]
+        public void DadoSenhaEmBrancoDeveExibirMensagemDeErro()
+        {
+            //arrange
+            driver.Navigate().GoToUrl("http://localhost:5000");
+            var btn = driver.FindElement(By.Id("btnRegistro"));
+            //act
+            btn.Click();
+            //assert
+            var elemento = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=Password]"));
+            Assert.Equal("The Senha field is required.", elemento.Text);
+        }
+
+        [Fact]
+        public void DadoConfirmacaoDeSenhaEmBrancoDeveExibirMensagemDeErro()
+        {
+            //arrange
+            driver.Navigate().GoToUrl("http://localhost:5000");
+            var btn = driver.FindElement(By.Id("btnRegistro"));
+            //act
+            btn.Click();
+            //assert
+            var confSenha = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=ConfirmPassword]"));
+            Assert.Equal("The Confirmação de Senha field is required.", confSenha.Text);
+
+        }
+
+        [Fact]
+        public void DadoConfirmacaoSenhaDiferenteDeveExibirMensagemDeErro()
+        {
+            //arrange
+            driver.Navigate().GoToUrl("http://localhost:5000");
+            var senha = driver.FindElement(By.Id("Password"));
+            var confSenha = driver.FindElement(By.Id("ConfirmPassword"));
+            var btn = driver.FindElement(By.Id("btnRegistro"));
+            //act
+            senha.SendKeys("1");
+            confSenha.SendKeys("2");
+            btn.Click();
+            //assert
+            var elemento = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=ConfirmPassword]"));
+            //var elemento = driver.FindElement(By.XPath("/html/body/section[3]/div/div/div[2]/form/div[4]/span/span"));
+            Assert.Equal("'Confirmação de Senha' and 'Senha' do not match.", elemento.Text);
+
+        }
+
     }
 }
