@@ -2,6 +2,7 @@
 using OpenQA.Selenium;
 using Xunit;
 using Alura.LeilaoOnline.Selenium.Fixtures;
+using Alura.LeilaoOnline.Selenium.PageObjects;
 
 namespace Alura.LeilaoOnline.Selenium.Testes
 {
@@ -15,18 +16,21 @@ namespace Alura.LeilaoOnline.Selenium.Testes
             driver = fixture.Driver;
         }
 
+
         [Fact]
         public void DadoInformacoesValidasDeveIrParaPaginaAgradecimento()
         {
             //Arrange - dado o chrome aberto, e dados de registros informados
-            driver.Navigate().GoToUrl("http://localhost:5000");
-            driver.FindElement(By.Id("Nome")).SendKeys("Henry Andrade");
-            driver.FindElement(By.Id("Email")).SendKeys("Henry@Henry.com");
-            driver.FindElement(By.Id("Password")).SendKeys("1234");
-            driver.FindElement(By.Id("ConfirmPassword")).SendKeys("1234");
+            var registroPO = new RegistroPO(driver);
+            registroPO.Visitar();
+            registroPO.PreencheFormulario(
+                "Henry andrade",
+                "henry@henry.com",
+                "1234",
+                "1234");
 
             //Act - quando enviar o registro
-            driver.FindElement(By.Id("btnRegistro")).Click();
+            registroPO.SubmeteFormulario();
 
             //Assert - entao devo ser redirecionado para pagina de agradecimento
             Assert.Contains("Obrigado por se registrar!", driver.PageSource);
@@ -44,19 +48,12 @@ namespace Alura.LeilaoOnline.Selenium.Testes
             string confirmaSenha)
         {
             //Arrange - dado o chrome aberto, e dados de registros informados
-            driver.Navigate().GoToUrl("http://localhost:5000");
-            var inputNome = driver.FindElement(By.Id("Nome"));
-            var inputEmail = driver.FindElement(By.Id("Email"));
-            var inputSenha = driver.FindElement(By.Id("Password"));
-            var inputConfirmaSenha = driver.FindElement(By.Id("ConfirmPassword"));
-
-            inputNome.SendKeys(nome);
-            inputEmail.SendKeys(email);
-            inputSenha.SendKeys(senha);
-            inputConfirmaSenha.SendKeys(confirmaSenha);
+            var registroPO = new RegistroPO(driver);
+            registroPO.Visitar();
+            registroPO.PreencheFormulario(nome, email, senha, confirmaSenha);
 
             //Act - quando enviar o registro
-            driver.FindElement(By.Id("btnRegistro")).Click();
+            registroPO.SubmeteFormulario();
 
             //Assert - entao devo ser redirecionado para pagina de agradecimento
             Assert.Contains("section-registro", driver.PageSource);
@@ -67,13 +64,14 @@ namespace Alura.LeilaoOnline.Selenium.Testes
         {
 
             //Arrange
-            driver.Navigate().GoToUrl("http://localhost:5000");
-            var btn = driver.FindElement(By.Id("btnRegistro"));
+            var regitroPO = new RegistroPO(driver);
+            regitroPO.Visitar();
+
             //Act
-            btn.Click();
+            regitroPO.SubmeteFormulario();
+
             //Assert
-            IWebElement element = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=Nome]"));
-            Assert.Equal("The Nome field is required.", element.Text);
+            Assert.Equal("The Nome field is required.", regitroPO.VerificaMensagemDeErroNome());
         }
 
 
@@ -82,15 +80,14 @@ namespace Alura.LeilaoOnline.Selenium.Testes
         {
 
             //Arrange
-            driver.Navigate().GoToUrl("http://localhost:5000");
-            var email = driver.FindElement(By.Id("Email"));
-            var btn = driver.FindElement(By.Id("btnRegistro"));
+            var registroPO = new RegistroPO(driver);
+            registroPO.Visitar();
             //Act
-            email.SendKeys("Henry");
-            btn.Click();
+            registroPO.PreencheFormulario("", "Henry", "", "");
+            registroPO.SubmeteFormulario();
+
             //Assert
-            IWebElement element = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=Email]"));
-            Assert.Equal("Please enter a valid email address.", element.Text);
+            Assert.Equal("Please enter a valid email address.", registroPO.VerificaMensagemDeErroEmail());
         }
 
 
@@ -98,39 +95,40 @@ namespace Alura.LeilaoOnline.Selenium.Testes
         public void DadoEmailEmBrancoDeveMostrarMensagemDeErro()
         {
             //arrange
-            driver.Navigate().GoToUrl("http://localhost:5000");
-            var btn = driver.FindElement(By.Id("btnRegistro"));
+            var registroPO = new RegistroPO(driver);
+            registroPO.Visitar();
+
             //act
-            btn.Click();
+            registroPO.SubmeteFormulario();
+
             //assert
-            var span = driver.FindElement(By.XPath("/html/body/section[3]/div/div/div[2]/form/div[2]/span/span"));
-            Assert.Equal("The Endereço de Email field is required.", span.Text);
+            Assert.Equal("The Endereço de Email field is required.", registroPO.VerificaMensagemDeErroEmail());
         }
 
         [Fact]
         public void DadoSenhaEmBrancoDeveExibirMensagemDeErro()
         {
             //arrange
-            driver.Navigate().GoToUrl("http://localhost:5000");
-            var btn = driver.FindElement(By.Id("btnRegistro"));
+            var registroPO = new RegistroPO(driver);
+            registroPO.Visitar();
+
             //act
-            btn.Click();
+            registroPO.SubmeteFormulario();
+
             //assert
-            var elemento = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=Password]"));
-            Assert.Equal("The Senha field is required.", elemento.Text);
+            Assert.Equal("The Senha field is required.", registroPO.VerificaMensagemDeErroSenha());
         }
 
         [Fact]
         public void DadoConfirmacaoDeSenhaEmBrancoDeveExibirMensagemDeErro()
         {
             //arrange
-            driver.Navigate().GoToUrl("http://localhost:5000");
-            var btn = driver.FindElement(By.Id("btnRegistro"));
+            var registroPO = new RegistroPO(driver);
+            registroPO.Visitar();
             //act
-            btn.Click();
+            registroPO.SubmeteFormulario();
             //assert
-            var confSenha = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=ConfirmPassword]"));
-            Assert.Equal("The Confirmação de Senha field is required.", confSenha.Text);
+            Assert.Equal("The Confirmação de Senha field is required.", registroPO.VerificaMensagemDeErroConfirmaSenha());
 
         }
 
@@ -138,18 +136,13 @@ namespace Alura.LeilaoOnline.Selenium.Testes
         public void DadoConfirmacaoSenhaDiferenteDeveExibirMensagemDeErro()
         {
             //arrange
-            driver.Navigate().GoToUrl("http://localhost:5000");
-            var senha = driver.FindElement(By.Id("Password"));
-            var confSenha = driver.FindElement(By.Id("ConfirmPassword"));
-            var btn = driver.FindElement(By.Id("btnRegistro"));
+            var registroPO = new RegistroPO(driver);
+            registroPO.Visitar();
             //act
-            senha.SendKeys("1");
-            confSenha.SendKeys("2");
-            btn.Click();
+            registroPO.PreencheFormulario("", "", "1", "2");
+            registroPO.SubmeteFormulario();
             //assert
-            var elemento = driver.FindElement(By.CssSelector("span.msg-erro[data-valmsg-for=ConfirmPassword]"));
-            //var elemento = driver.FindElement(By.XPath("/html/body/section[3]/div/div/div[2]/form/div[4]/span/span"));
-            Assert.Equal("'Confirmação de Senha' and 'Senha' do not match.", elemento.Text);
+            Assert.Equal("'Confirmação de Senha' and 'Senha' do not match.", registroPO.VerificaMensagemDeErroConfirmaSenha());
 
         }
 
